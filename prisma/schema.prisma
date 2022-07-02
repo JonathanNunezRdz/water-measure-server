@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cistern {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name                String @unique
+  length              Float
+  width               Float
+  maxWaterHeight      Float
+  minWaterHeight      Float
+  waterLevelThreshold Float
+
+  waterLevel WaterLevel[]
+  sensor     Sensor?
+}
+
+model WaterLevel {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  level Float
+
+  cistern   Cistern @relation(references: [id], fields: [cisternId])
+  cisternId Int
+}
+
+model Distance {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime
+
+  distance Float
+
+  sensor          Sensor @relation(references: [id, cisternId], fields: [sensorId, sensorCisternId])
+  sensorId        Int
+  sensorCisternId Int
+}
+
+model Sensor {
+  id        Int      @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  height Float
+  offset Float
+
+  cistern   Cistern    @relation(references: [id], fields: [cisternId])
+  cisternId Int        @unique
+  distances Distance[]
+
+  @@id([id, cisternId])
+}
+
+model Valve {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name   String      @unique
+  status ValveStatus
+}
+
+enum ValveStatus {
+  open
+  closed
+}
