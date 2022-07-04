@@ -11,9 +11,9 @@ export class CisternController {
 		return this.cisternService.getAllCisterns();
 	}
 
-	@Get(':id')
-	getCistern(@Param('id') id: number) {
-		return this.cisternService.getCistern(id);
+	@Get(':name')
+	getCistern(@Param('name') name: string) {
+		return this.cisternService.getCistern(name);
 	}
 
 	@Post('register')

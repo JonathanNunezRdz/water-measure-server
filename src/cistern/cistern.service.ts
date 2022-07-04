@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterCisternDto } from './dto';
 
@@ -15,12 +16,13 @@ export class CisternService {
 		});
 	}
 
-	async getCistern(id: number) {
+	async getCistern(name: string) {
 		return this.prisma.cistern.findUnique({
 			where: {
-				id,
+				name,
 			},
 			include: {
+				sensor: true,
 				waterLevel: {
 					take: 10,
 				},
@@ -29,26 +31,39 @@ export class CisternService {
 	}
 
 	async registerCistern(dto: RegisterCisternDto) {
-		const cistern = await this.prisma.cistern.create({
-			data: {
-				name: dto.name,
-				length: dto.length,
-				width: dto.width,
-				maxWaterHeight: dto.maxWaterHeight,
-				minWaterHeight: dto.minWaterHeight,
-				waterLevelThreshold: dto.waterLevelThreshold,
-				sensor: {
-					create: {
-						height: dto.sensorHeight,
-						offset: dto.sensorOffset,
+		try {
+			const cistern = await this.prisma.cistern.create({
+				data: {
+					name: dto.name,
+					length: dto.length,
+					width: dto.width,
+					maxWaterHeight: dto.maxWaterHeight,
+					minWaterHeight: dto.minWaterHeight,
+					waterLevelThreshold: dto.waterLevelThreshold,
+					sensor: {
+						create: {
+							height: dto.sensorHeight,
+							offset: dto.sensorOffset,
+						},
 					},
 				},
-			},
-			include: {
-				sensor: true,
-			},
-		});
+				include: {
+					sensor: true,
+					waterLevel: {
+						take: 10,
+					},
+				},
+			});
 
-		return cistern;
+			return cistern;
+		} catch (error) {
+			if (error instanceof PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ForbiddenException(
+						`Name: "${dto.name}" is already registered`
+					);
+				}
+			}
+		}
 	}
 }
