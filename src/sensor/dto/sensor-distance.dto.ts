@@ -1,4 +1,5 @@
-import { IsInt, IsISO8601, IsNotEmpty, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDate, IsInt, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class SensorDistanceDto {
 	@IsNumber({}, { each: true })
@@ -9,9 +10,10 @@ export class SensorDistanceDto {
 	@IsNotEmpty()
 	id: number;
 
-	@IsISO8601()
+	@Type(() => Date)
+	@IsDate()
 	@IsNotEmpty()
-	date: string;
+	date: Date;
 
 	@IsInt()
 	@IsNotEmpty()

@@ -10,4 +10,9 @@ export class SensorController {
 	registerDistance(@Body() dto: SensorDistanceDto) {
 		return this.sensorService.registerDistance(dto);
 	}
+
+	@Post('test')
+	test(@Body() dto: SensorDistanceDto) {
+		return this.sensorService.test(dto);
+	}
 }

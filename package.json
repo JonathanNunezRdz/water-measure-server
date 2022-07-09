@@ -20,7 +20,8 @@
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
 		"db:dev:up": "docker compose up dev-db -d",
-		"db:dev:down": "docker compose down dev-db"
+		"db:dev:down": "docker compose down dev-db",
+		"docker:desktop": "node ./src/test-docker.js"
 	},
 	"dependencies": {
 		"@nestjs/common": "^8.0.0",

@@ -7,13 +7,13 @@ export class SensorService {
 	constructor(private prisma: PrismaService) {}
 
 	async registerDistance(dto: SensorDistanceDto) {
-		const { distances } = dto;
+		const { distances, id, cisternId } = dto;
 
 		const sensor = await this.prisma.sensor.findUnique({
 			where: {
 				id_cisternId: {
-					id: dto.id,
-					cisternId: dto.cisternId,
+					id,
+					cisternId,
 				},
 			},
 			select: {
@@ -26,32 +26,37 @@ export class SensorService {
 			distances.reduce((prev, curr) => prev + curr) / distances.length +
 			sensor.offset;
 
-		await this.prisma.distance.create({
-			data: {
-				distance: distance,
-				createdAt: dto.date,
-				sensor: {
-					connect: {
-						id_cisternId: {
-							cisternId: dto.cisternId,
-							id: dto.id,
+		const waterHeight = sensor.height - distance;
+
+		await this.prisma.$transaction([
+			this.prisma.distance.create({
+				data: {
+					distance: distance,
+					createdAt: dto.date,
+					sensor: {
+						connect: {
+							id_cisternId: {
+								cisternId,
+								id,
+							},
 						},
 					},
 				},
-			},
-		});
-
-		const waterHeight = sensor.height - distance;
-
-		await this.prisma.waterLevel.create({
-			data: {
-				level: waterHeight,
-				cistern: {
-					connect: {
-						id: dto.cisternId,
+			}),
+			this.prisma.waterLevel.create({
+				data: {
+					level: waterHeight,
+					cistern: {
+						connect: {
+							id: cisternId,
+						},
 					},
 				},
-			},
-		});
+			}),
+		]);
+	}
+
+	test(dto: SensorDistanceDto) {
+		console.log({ dto });
 	}
 }
