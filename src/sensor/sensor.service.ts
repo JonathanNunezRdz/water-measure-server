@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { createObjectCsvWriter } from 'csv-writer';
+import { existsSync, unlinkSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SensorDistanceDto } from './dto';
+import { SensorCalibrateDto, SensorDistanceDto } from './dto';
 
 @Injectable()
 export class SensorService {
@@ -18,13 +21,14 @@ export class SensorService {
 			},
 			select: {
 				height: true,
-				offset: true,
+				intercept: true,
+				coefficient: true,
 			},
 		});
 
-		const distance =
-			distances.reduce((prev, curr) => prev + curr) / distances.length +
-			sensor.offset;
+		const rawDistance =
+			distances.reduce((prev, curr) => prev + curr) / distances.length;
+		const distance = rawDistance * sensor.coefficient + sensor.intercept;
 
 		const waterHeight = sensor.height - distance;
 
@@ -58,5 +62,26 @@ export class SensorService {
 
 	test(dto: SensorDistanceDto) {
 		console.log({ dto });
+	}
+
+	async calibrate(dto: SensorCalibrateDto) {
+		dto.calibrationData.forEach((val) => console.log(val));
+		const file = join(__dirname, 'calibration', `sensor_${dto.id}.csv`);
+		console.log({ file });
+
+		if (existsSync(file)) {
+			console.log('doesnt exist');
+			unlinkSync(file);
+		}
+
+		writeFileSync(file, '');
+		const writer = createObjectCsvWriter({
+			path: file,
+			header: [{ id: 'distance', title: 'distance' }],
+		});
+		const data = dto.calibrationData.map((distance) => ({
+			distance,
+		}));
+		await writer.writeRecords(data);
 	}
 }

@@ -18,9 +18,18 @@
 		"test:watch": "jest --watch",
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-		"test:e2e": "jest --config ./test/jest-e2e.json",
+		"pretest:e2e": "yarn db:test:restart && timeout /t 3",
+		"test:e2e": "dotenv -e .env.test -- jest --watch --no-cache --config ./test/jest-e2e.json",
+		"prisma:dev:studio": "prisma studio",
+		"prisma:dev:deploy": "prisma migrate deploy",
+		"db:dev:rm": "docker compose rm dev-db -s -f -v",
 		"db:dev:up": "docker compose up dev-db -d",
-		"db:dev:down": "docker compose down dev-db",
+		"db:dev:restart": "yarn db:dev:rm && yarn db:dev:up && timeout /t 3 && yarn prisma:dev:deploy",
+		"prisma:test:studio": "dotenv -e .env.test -- prisma studio",
+		"prisma:test:deploy": "dotenv -e .env.test -- prisma migrate deploy",
+		"db:test:rm": "docker compose rm test-db -s -f -v",
+		"db:test:up": "docker compose up test-db -d",
+		"db:test:restart": "yarn db:test:rm && yarn db:test:up && timeout /t 3 && yarn prisma:test:deploy",
 		"docker:desktop": "node ./src/test-docker.js"
 	},
 	"dependencies": {
@@ -30,6 +39,7 @@
 		"@prisma/client": "^3.15.2",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.13.2",
+		"csv-writer": "^1.6.0",
 		"reflect-metadata": "^0.1.13",
 		"rimraf": "^3.0.2",
 		"rxjs": "^7.2.0"

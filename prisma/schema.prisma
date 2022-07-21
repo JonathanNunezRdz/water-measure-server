@@ -53,8 +53,9 @@ model Sensor {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  height Float
-  offset Float
+  height      Float
+  coefficient Float
+  intercept   Float
 
   cistern   Cistern    @relation(references: [id], fields: [cisternId])
   cisternId Int        @unique

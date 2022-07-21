@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { SensorDistanceDto } from './dto';
+import { SensorCalibrateDto, SensorDistanceDto } from './dto';
 import { SensorService } from './sensor.service';
 
 @Controller('sensor')
@@ -14,5 +14,10 @@ export class SensorController {
 	@Post('test')
 	test(@Body() dto: SensorDistanceDto) {
 		return this.sensorService.test(dto);
+	}
+
+	@Post('calibrate')
+	calibrate(@Body() dto: SensorCalibrateDto) {
+		return this.sensorService.calibrate(dto);
 	}
 }
