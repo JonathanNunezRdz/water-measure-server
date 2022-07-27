@@ -43,7 +43,8 @@ export class CisternService {
 					sensor: {
 						create: {
 							height: dto.sensorHeight,
-							offset: dto.sensorOffset,
+							coefficient: 0.0,
+							intercept: 0.0,
 						},
 					},
 				},
